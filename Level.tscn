@@ -1,0 +1,120 @@
+[gd_scene load_steps=11 format=3 uid="uid://dklvc0s3msrep"]
+
+[ext_resource type="Script" path="res://Player.gd" id="1_bpfjr"]
+[ext_resource type="Script" path="res://InGameArea3D.gd" id="2_sngio"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6cmu5"]
+albedo_color = Color(0.159166, 0.337735, 0.155017, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_bpnrn"]
+material = SubResource("StandardMaterial3D_6cmu5")
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_fvulq"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_70y5i"]
+
+[sub_resource type="PrismMesh" id="PrismMesh_dvmd6"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_li3qk"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_phvct"]
+height = 10.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ynhv5"]
+size = Vector3(25, 10, 25)
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("PlaneMesh_bpnrn")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("WorldBoundaryShape3D_fvulq")
+
+[node name="Player" type="CharacterBody3D" parent="." groups=["Player"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+script = ExtResource("1_bpfjr")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Player"]
+mesh = SubResource("CapsuleMesh_70y5i")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Player/MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.5, -0.5)
+mesh = SubResource("PrismMesh_dvmd6")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+shape = SubResource("CapsuleShape3D_li3qk")
+
+[node name="SpringArm3D" type="SpringArm3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 1, 0)
+shape = SubResource("CylinderShape3D_phvct")
+spring_length = 5.0
+
+[node name="Camera3D" type="Camera3D" parent="Player/SpringArm3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.401924, 6.69615)
+
+[node name="SpotLight3D" type="SpotLight3D" parent="Player/SpringArm3D/Camera3D"]
+spot_angle = 19.5258
+
+[node name="InGameArea3D" type="Area3D" parent="."]
+script = ExtResource("2_sngio")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InGameArea3D"]
+shape = SubResource("BoxShape3D_ynhv5")
+
+[node name="CountdownTimer" type="Timer" parent="InGameArea3D"]
+
+[node name="DeathTimer" type="Timer" parent="InGameArea3D"]
+wait_time = 3.0
+one_shot = true
+
+[node name="RespawnAreaUI" type="Control" parent="InGameArea3D"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="InGameArea3D/RespawnAreaUI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.285997, 2.58703e-07, 1.20327e-07, 0.223529)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="InGameArea3D/RespawnAreaUI"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -83.0
+offset_top = -36.0
+offset_right = 83.0
+offset_bottom = 36.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="InGameArea3D/RespawnAreaUI/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Return to area"
+horizontal_alignment = 1
+
+[node name="CountdownLabel" type="Label" parent="InGameArea3D/RespawnAreaUI/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Return to area"
+horizontal_alignment = 1
+
+[connection signal="body_entered" from="InGameArea3D" to="InGameArea3D" method="_on_body_entered"]
+[connection signal="body_exited" from="InGameArea3D" to="InGameArea3D" method="_on_body_exited"]
+[connection signal="timeout" from="InGameArea3D/CountdownTimer" to="InGameArea3D" method="_on_countdown_timer_timeout"]
+[connection signal="timeout" from="InGameArea3D/DeathTimer" to="InGameArea3D" method="_on_timer_timeout"]
